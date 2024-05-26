@@ -21,11 +21,11 @@ public class BenchMarkClass
     [Params([3, 7, 15, 1023, 16383])]
     public int Count { get; set; }
 
-    [Benchmark(Baseline = true)]
-    public string RepeatBase()
+    [Benchmark]
+    public string RepeatWithCounter()
     {
-        return StringRepeatBase(Input, Count);
-        static string StringRepeatBase(string str, int count)
+        return StringRepeatWithCounter(Input, Count);
+        static string StringRepeatWithCounter(string str, int count)
         {
             ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
             return (count, str.Length) switch
@@ -51,7 +51,7 @@ public class BenchMarkClass
         }
     }
 
-    [Benchmark]
+    [Benchmark(Baseline = true)]
     public string RepeatNoCounter()
     {
         return StringRepeatNoCounter(Input, Count);
