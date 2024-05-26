@@ -18,7 +18,7 @@ public class BenchMarkClass
     )]
     public string Input { get; set; } = null!;
 
-    [Params([3, 15, 127, 1023, 16383])]
+    [Params([3, 7, 15, 1023, 16383])]
     public int Count { get; set; }
 
     [Benchmark(Baseline = true)]
