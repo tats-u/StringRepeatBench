@@ -1,11 +1,11 @@
 # LICENSE
 
-The definitions of the local functions whose names start with `StringRepeat` but are not `StringRepeatWithCounter` are licensed under either of the following licenses:
+The definitions of the local functions whose names start with `StringRepeat` but are not `StringRepeatWithCounter` (in `RepeatDoubleBlockSizeBench.cs`) are licensed under either of the following licenses:
 
 - Creative Commons Zero v1.0 Universal License
 - WTFPLv2
 
-The other parts of the program except for `StringRepeatWithCounter` are licensed under the MIT license.
+The other parts of the program except for `StringRepeatWithCounter` in `RepeatDoubleBlockSizeBench.cs` are licensed under the MIT license.
 
 ## MIT
 

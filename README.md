@@ -8,11 +8,11 @@ Benchmarks for candidate algorithms for `System.String.Repeat`.
 dotnet run -c Release -- --statisticalTest 5% -f "*"
 ```
 
-`--statisticalTest 5%` performs the Mann-Whitney U test with a 5% significance level.
-
-If you feel like this benchmark takes too long to run, you might want to add `--maxIterationCount 50` (or less value) to the command above.
-
-If you want to add or change runtimes, you might want to add `-r <baseline runtime> <another runtime #1> <another runtime #2>`.
+- `--statisticalTest 5%` performs the Mann-Whitney U test with a 5% significance level.
+- If you want to run a specific benchmark, you might want to replace `-f "*"` with `-f "<benchmark name>*"`. `-f "*"` runs all the benchmarks, which results in the consumption of a large amount of time.
+- If you feel like this benchmark takes too long to run, you might want to add `--maxIterationCount 50` (or less value) to the command above.
+- If you want to add or change runtimes, you might want to add `-r <baseline runtime> <another runtime #1> <another runtime #2>`.
+- If you want to preserve past results, you might want to add `--noOverwrite` to the command above.
 
 ### Generated results
 
@@ -20,10 +20,12 @@ The results are stored in `./BenchmarkDotNet.Artifacts/results/`.
 
 ## Results
 
+### vs naive `string.Create` implementations
+
 Command:
 
 ```bash
-dotnet run -c Release -- --runtimes net8.0 nativeaot8.0 --statisticalTest 5% -f "*"
+dotnet run -c Release -- --runtimes net8.0 nativeaot8.0 --statisticalTest 5% -f "RepeatDoubleBlockSizeBench*"
 ```
 
 Results:
@@ -99,3 +101,34 @@ Intel Core i7-9700 CPU 3.00GHz, 1 CPU, 8 logical and 8 physical cores
 | **RepeatWithCounter**     | **👨‍(...)‍🧑 [128]**  | **16383** | **1,421,301.32 ns** | **28,223.169 ns** | **44,764.937 ns** |  **0.99** | **Same**            |    **0.04** | **998.0469** | **998.0469** | **998.0469** | **4194496 B** |        **1.00** |
 | RepeatNoCounter       | 👨‍(...)‍🧑 [128]  | 16383 | 1,429,694.28 ns | 28,501.615 ns | 39,013.333 ns |  1.00 | Base            |    0.00 | 998.0469 | 998.0469 | 998.0469 | 4194408 B |        1.00 |
 | RepeatDoubleBlockSize | 👨‍(...)‍🧑 [128]  | 16383 |   794,637.41 ns | 15,844.339 ns | 17,610.941 ns |  0.56 | Faster          |    0.02 | 999.0234 | 999.0234 | 999.0234 | 4194408 B |        1.00 |
+
+### vs LINQ implementation
+
+```bash
+dotnet run -c Release -- --statisticalTest 5% -f "VSLinqTest*" --noOverwrite --maxIterationCount 40
+```
+
+```
+
+BenchmarkDotNet v0.13.12, Windows 11 (10.0.22631.3593/23H2/2023Update/SunValley3)
+Intel Core i7-9700 CPU 3.00GHz, 1 CPU, 8 logical and 8 physical cores
+.NET SDK 8.0.300-preview.24203.14
+  [Host]     : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
+  Job-DBCPAT : .NET 8.0.5 (8.0.524.21615), X64 RyuJIT AVX2
+
+MaxIterationCount=40  
+
+```
+| Method              | Input             | Count | Mean            | Error         | StdDev        | Ratio | MannWhitney(5%) | RatioSD |
+|-------------------- |------------------ |------ |----------------:|--------------:|--------------:|------:|---------------- |--------:|
+| **StringCreateFastest** | **👍**                | **3**     |        **18.82 ns** |      **0.408 ns** |      **0.382 ns** |  **1.00** | **Base**            |    **0.00** |
+| Linq                | 👍                | 3     |        36.84 ns |      0.426 ns |      0.356 ns |  1.95 | Slower          |    0.04 |
+|                     |                   |       |                 |               |               |       |                 |         |
+| **StringCreateFastest** | **👍**                | **16383** |     **2,710.49 ns** |     **46.661 ns** |     **45.828 ns** |  **1.00** | **Base**            |    **0.00** |
+| Linq                | 👍                | 16383 |    94,059.70 ns |  1,139.643 ns |  1,010.264 ns | 34.76 | Slower          |    0.65 |
+|                     |                   |       |                 |               |               |       |                 |         |
+| **StringCreateFastest** | **👨‍(...)‍🧑 [128]** | **3**     |        **53.35 ns** |      **1.088 ns** |      **1.069 ns** |  **1.00** | **Base**            |    **0.00** |
+| Linq                | 👨‍(...)‍🧑 [128] | 3     |       123.64 ns |      2.620 ns |      4.590 ns |  2.25 | Slower          |    0.10 |
+|                     |                   |       |                 |               |               |       |                 |         |
+| **StringCreateFastest** | **👨‍(...)‍🧑 [128]** | **16383** |   **816,125.05 ns** |  **8,544.552 ns** |  **7,992.579 ns** |  **1.00** | **Base**            |    **0.00** |
+| Linq                | 👨‍(...)‍🧑 [128] | 16383 | 1,285,999.49 ns | 24,760.555 ns | 29,475.679 ns |  1.58 | Slower          |    0.04 |
