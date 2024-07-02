@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+
 using BenchmarkDotNet.Attributes;
 
 [MemoryDiagnoser]
@@ -71,6 +73,40 @@ public class RepeatDoubleBlockSizeBench
                             }
                         }
                     ),
+            };
+        }
+    }
+
+    [Benchmark]
+    public string RepeatPowerShell()
+    {
+        return StringRepeatPowerShell(Input, Count);
+        static string StringRepeatPowerShell(string str, int count)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count, nameof(count));
+            return (count, str.Length) switch
+            {
+                (0, _) or (_, 0) => "",
+                (1, _) => str,
+                (_, 1) => new string(str[0], count),
+                _
+                    => string.Create(
+                        checked(str.Length * count),
+                        (str, count),
+                        static (dst, args) =>
+                        {
+                            // https://github.com/PowerShell/PowerShell/blob/ec3840d6a1fffdbaca7173ededb4a4504b2f5b41/src/System.Management.Automation/engine/runtime/Operations/StringOps.cs#L53-L62
+                            // Copyright (c) Microsoft Corporation.
+                            // Licensed under the MIT License.
+                            ReadOnlySpan<char> src = args.str.AsSpan();
+                            int length = src.Length;
+                            for (int i = 0; i < args.count; i++)
+                            {
+                                src.CopyTo(dst);
+                                dst = dst.Slice(length);
+                            }
+                        }
+                        )
             };
         }
     }
